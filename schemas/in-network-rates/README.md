@@ -4,7 +4,6 @@
 | ----- | ---- | ---- | ---------- | -------- |
 | **reporting_entity_name** | Entity Name | String | The legal name of the entity publishing the machine-readable file. | Yes |
 | **reporting_entity_type** | Entity Type | String | The type of entity that is publishing the machine-readable file (a group health plan, health insurance issuer, or a third party with which the plan or issuer has contracted to provide the required information, such as a third-party administrator, a health care claims clearinghouse, or a health insurance issuer that has contracted with a group health plan sponsor). | Yes |
-| **reporting_entity_npi** | Entity NPI | String | The Type 2 National Provider Identifier (NPI) of the reporting entity. | Yes |
 | **issuer_name** | Issuer Name | String | The name of the plan's issuer. | No |
 | **plan_name** | Plan Name | String | The plan's name. | No |
 | **plan_id_type** | Plan Id Type | String | Allowed values: "ein" and "hios" | No |
@@ -18,24 +17,12 @@
 | **provider_references** | Provider References | Array | An array of [provider reference object types.](#provider-reference-object) | Yes |
 | **last_updated_on** | Last Updated On | String | The date in which the file was last updated. Date must be in an ISO 8601 format (i.e. YYYY-MM-DD) | Yes |
 | **version** | Version | String | The version of the schema for the produced information | Yes |
-| **attestation** | Attestation | Object | An [attestation object](#attestation-object) containing certification that the file is true, accurate, and complete. | Yes |
 
 ##### Additional Notes Concerning `plan_name`, `plan_id_type`, `plan_id`, `plan_market_type`, `issuer_name`, `plan_sponsor_name`
 These attributes are not required for files that will be reporting multiple plans per file but ARE REQUIRED for single plans that are being reported that do not wish to create a table-of-content file. For payers/issuers that will be reporting multiple plans per file, these attributes will be required in a table-of-contents file.
 
 ##### Additional Notes Concerning Network-Level Reporting
-Beginning with the effective date specified in the final rule, in-network rate files may be published at the network level rather than at the plan level to reduce duplication and file volume. When publishing at the network level, the `network_id` field should be populated with a stable identifier, and the `plan_name`, `plan_id_type`, `plan_id`, and related plan-specific fields may be omitted from the in-network file and instead reported in the table-of-contents file with mappings to the applicable network files.
-
-#### Attestation Object
-
-This type defines an attestation object certifying the accuracy and completeness of the file.
-
-| Field | Name | Type | Definition | Required |
-| ----- | ---- | ---- | ---------- | -------- |
-| **attester_name** | Attester Name | String | The name of the chief executive officer, president, or senior official designated to oversee the encoding of true, accurate, and complete data. | Yes |
-| **attester_title** | Attester Title | String | The title of the attesting official. | Yes |
-| **attestation_date** | Attestation Date | String | The date of attestation in ISO 8601 format (YYYY-MM-DD). | Yes |
-| **attestation_statement** | Attestation Statement | String | A statement attesting that, to the best of the attester's knowledge and belief, the reporting entity has included all applicable standard charge information and that the information encoded is true, accurate, and complete as of the date in the file. | Yes |
+In-network rate files may be published at the network level rather than at the plan level to reduce duplication and file volume. When publishing at the network level, the `network_id` field should be populated with a stable identifier, and the `plan_name`, `plan_id_type`, `plan_id`, and related plan-specific fields may be omitted from the in-network file and instead reported in the table-of-contents file with mappings to the applicable network files.
 
 #### In-Network Object
 
@@ -95,6 +82,7 @@ For most businesses reporting cases, a tax identification number (tin) is used t
 **Important:** The `tin.value` field must contain a valid 10-digit NPI (starting with 1-9) when `tin.type` is "npi", or a valid EIN format when `tin.type` is "ein". The value "0" is NOT a valid `tin.value`.
 
 In contractual arrangements that are only made at the TIN level, where NPIs are unknown or otherwise unavailable, the value `0` should be reported in the **`npi` array field** (e.g., `"npi": [0]`), NOT in the `tin.value` field. In contractual arrangements where both the NPI and TIN are available, both are required to be disclosed.
+
 #### Provider Reference Object
 
 This type defines a provider reference object. This object is used in the `provider_references` array found on the root object of the in-network schema. The Provider Group Id is a unique interger ID that is defined by the user to be referenced in the [Negotiated Rate Details Object](#negotiated-rate-details-object) in the `provider_references` array. An example of using provider references can be found in the definition of [provider reference objects](https://github.com/CMSgov/price-transparency-guide/blob/c3ba257f41f4b289b574557e2fcf0833c36ef79f/examples/in-network-rates/in-network-rates-fee-for-service-single-plan-sample.json#L10-L28) and then the usages of the `provider_group_id`s in the [negotiated rate object](https://github.com/CMSgov/price-transparency-guide/blob/c3ba257f41f4b289b574557e2fcf0833c36ef79f/examples/in-network-rates/in-network-rates-fee-for-service-single-plan-sample.json#L86).
@@ -113,10 +101,6 @@ The negotiated price object contains negotiated pricing information that the typ
 | ----- | ---- | ---- | ---------- | -------- |
 | **negotiated_type** | Negotiated Type | String | There are a few ways in which negotiated rates can happen. Allowed values: "negotiated", "derived", "fee schedule", "percentage", and "per diem". See [additional notes](#additional-notes-1). | Yes |
 | **negotiated_rate** | Negotiated Rate | Number | The dollar or percentage amount based on the `negotiation_type` | Yes |
-| **negotiated_rate_median** | Negotiated Rate Median | Number | The median allowed amount when `negotiated_type` is "percentage" or when the negotiated rate is based on an algorithm. Required when the negotiated charge cannot be expressed as a single dollar amount. | Conditional |
-| **negotiated_rate_10th_percentile** | Negotiated Rate 10th Percentile | Number | The 10th percentile allowed amount when `negotiated_type` is "percentage" or when the negotiated rate is based on an algorithm. Required when the negotiated charge cannot be expressed as a single dollar amount. | Conditional |
-| **negotiated_rate_90th_percentile** | Negotiated Rate 90th Percentile | Number | The 90th percentile allowed amount when `negotiated_type` is "percentage" or when the negotiated rate is based on an algorithm. Required when the negotiated charge cannot be expressed as a single dollar amount. | Conditional |
-| **negotiated_rate_count** | Negotiated Rate Count | Number | The count of allowed amounts used to calculate the median and percentile values. Required when `negotiated_rate_median`, `negotiated_rate_10th_percentile`, or `negotiated_rate_90th_percentile` are provided. | Conditional |
 | **expiration_date** | Expiration Date | String | The date in which the agreement for the `negotiated_price` based on the `negotiated_type` ends. Date must be in an ISO 8601 format (i.e. YYYY-MM-DD). See additional notes. | Yes |
 | **service_code** | Place of Service Code | An array of two-digit strings | The [CMS-maintained two-digit code](https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set) that is placed on a professional claim to indicate the setting in which a service was provided. When attribute of `billing_class` has the value of "professional", `service_code` is required.  | No |
 | **billing_class** | Billing Class | String | Allowed values: "professional", "institutional", "both" | Yes |
@@ -124,23 +108,12 @@ The negotiated price object contains negotiated pricing information that the typ
 | **billing_code_modifier** | Billing Code Modifier | Array | An array of strings. There are certain billing code types that allow for modifiers (e.g. The CPT coding type allows for modifiers). If a negotiated rate for a billing code type is dependent on a modifier for the reported item or service, then an additional negotiated price object should be included to represent the difference. | No |
 | **additional_information** | Additional Information | String | The additional information text field can be used to provide context for negotiated arrangements that do not fit the existing schema format. Please open a Github discussion to ask a question about your situation if you plan to use this attribute. | No |
 
-##### Additional Notes Concerning Percentage and Algorithm-Based Rates
-When payer-specific negotiated charges are based on percentages or algorithms and cannot be expressed as a single dollar amount, the reporting entity must calculate and encode the median, 10th percentile, and 90th percentile allowed amounts as well as the count of allowed amounts. This ensures that patients have access to complete and accurate information about actual prices rather than estimates or algorithms.
-
-For example, if a negotiated rate is "80% of billed charges," the reporting entity must provide:
-- `negotiated_rate`: 80 (the percentage value)
-- `negotiated_type`: "percentage"
-- `negotiated_rate_median`: The median dollar amount actually paid
-- `negotiated_rate_10th_percentile`: The 10th percentile dollar amount actually paid
-- `negotiated_rate_90th_percentile`: The 90th percentile dollar amount actually paid
-- `negotiated_rate_count`: The number of claims used to calculate these statistics
-
 ##### Additional Notes
 For `negotiated_type` there are five allowable values: "negotiated", "derived", "fee schedule", "percentage", and "per diem". The value are defined as:
 * `negotiated`: If applicable, the negotiated rate, reflected as a dollar amount, for each covered item or service under the plan or coverage that the plan or issuer has contractually agreed to pay an in-network provider, except for prescription drugs that are subject to a fee-for-service reimbursement arrangement, which must be reported in the prescription drug machine-readable file. If the negotiated rate is subject to change based upon participant, beneficiary, or enrollee-specific characteristics, these dollar amounts should be reflected as the base negotiated rate applicable to the item or service prior to adjustments for participant, beneficiary, or enrollee-specific characteristics.
 * `derived`: If applicable, the price that a plan or issuer assigns to an item or service for the purpose of internal accounting, reconciliation with providers or submitting data in accordance with the requirements of 45 CFR 153.710(c).
 * `fee schedule`: If applicable, the rate for a covered item or service from a particular in-network provider, or providers that a group health plan or health insurance issuer uses to determine a participant's, beneficiary's, or enrollee's cost-sharing liability for the item or service, when that rate is different from the negotiated rate.
-* `percentage`: If applicable, the negotiated percentage value for a covered item or service from a particular in-network provider for a percentage of billed charges arrangement. Note: percentage values entered into the `negotiated_rate` attribute are to be a whole number percentage of the negotiated arrangement (i.e. 40.5% should be entered as 40.5 and not .405). When using "percentage", the `negotiated_rate_median`, `negotiated_rate_10th_percentile`, `negotiated_rate_90th_percentile`, and `negotiated_rate_count` fields are required.
+* `percentage`: If applicable, the negotiated percentage value for a covered item or service from a particular in-network provider for a percentage of billed charges arrangement. Note: percentage values entered into the `negotiated_rate` attribute are to be a whole number percentage of the negotiated arrangement (i.e. 40.5% should be entered as 40.5 and not .405).
 * `per diem`: If applicable, the per diem daily rate, reflected as a dollar amount, for each covered item or service under the plan or coverage that the plan or issuer has contractually agreed to pay an in-network provider.
 
 For `expiration_date`, there may be a situation when a contract arrangement is "[evergreen](https://www.investopedia.com/terms/e/evergreen.asp)". For evergreen contracts that automatically renew on a date provided in the contract, the expiration date you include should be the day immediately before the day of the automatic renewal.
@@ -172,34 +145,6 @@ For `service_code`, if a negotiated rate for either "professional", "institution
      "service_code": ["CSTM-00"],
      "billing_class": "professional"
    }],
- }]
-}
-```
-
-##### Example: Percentage-Based Rate with Required Statistics
-
-```json
-{
- "negotiation_arrangement": "ffs",
- "name": "MRI Brain Without Contrast",
- "billing_code_type": "CPT",
- "billing_code_type_version": "2026",
- "billing_code": "70551",
- "description": "MRI brain without contrast",
- "negotiated_rates": [{
-   "provider_references": [1],
-   "negotiated_prices": [{
-     "negotiated_type": "percentage",
-     "negotiated_rate": 65,
-     "negotiated_rate_median": 487.50,
-     "negotiated_rate_10th_percentile": 325.00,
-     "negotiated_rate_90th_percentile": 812.25,
-     "negotiated_rate_count": 1247,
-     "expiration_date": "2026-12-31",
-     "service_code": ["22"],
-     "billing_class": "professional",
-     "setting": "outpatient"
-   }]
  }]
 }
 ```
@@ -295,32 +240,69 @@ Machine-readable files must be updated on a **quarterly** basis, replacing the p
 
 ---
 
-### Effective Dates and Enforcement
-
-The new data elements required in this schema are effective **January 1, 2026**. CMS will delay enforcement of those requirements until **April 1, 2026** to allow reporting entities additional time to implement the changes.
-
-Key effective dates:
-- **January 1, 2026**: New schema requirements take effect (attestation, NPI encoding, percentage/algorithm statistics)
-- **April 1, 2026**: Enforcement of new requirements begins
-- **Quarterly updates**: Replace monthly update cadence
-
----
-
 ### Related File Types
 
-#### Utilization File (Future Requirement)
-A separate utilization file will be required to identify providers with at least one paid claim in the prior year. This file is intended to distinguish theoretical rates from actively used rates. Implementation timeline and specific requirements will be published separately.
+#### Utilization File
+A separate utilization file lists providers with at least one paid claim in the prior year. This file is intended to distinguish theoretical rates from actively used rates.
 
-#### Change-Log File (Future Requirement)
-A change-log file will be required to identify additions, removals, or modifications since the prior reporting period. Minimum detail standards and historical archive requirements will be published separately.
+| Field | Name | Type | Definition | Required |
+| ----- | ---- | ---- | ---------- | -------- |
+| **reporting_entity_name** | Entity Name | String | The legal name of the entity publishing the file. | Yes |
+| **reporting_entity_type** | Entity Type | String | The type of entity publishing the file. | Yes |
+| **network_id** | Network ID | String | The network identifier this utilization data applies to. | Yes |
+| **utilized_providers** | Utilized Providers | Array | An array of [utilized provider objects](#utilized-provider-object) | Yes |
+| **reporting_period_start** | Reporting Period Start | String | Start date of the utilization reporting period (ISO 8601 format). | Yes |
+| **reporting_period_end** | Reporting Period End | String | End date of the utilization reporting period (ISO 8601 format). | Yes |
+| **last_updated_on** | Last Updated On | String | The date the file was last updated (ISO 8601 format). | Yes |
+| **version** | Version | String | The version of the schema. | Yes |
+
+#### Utilized Provider Object
+
+| Field | Name | Type | Definition | Required |
+| ----- | ---- | ---- | ---------- | -------- |
+| **npi** | NPI | Array | An array of NPIs for providers with paid claims during the reporting period. | Yes |
+| **tin** | Tax Identification Number | Object | The [tax identifier object](#tax-identifier-object). | Yes |
+| **utilized_indicator** | Utilized Indicator | Boolean | Indicates whether this provider had at least one paid claim during the reporting period. | Yes |
+
+##### Additional Notes Concerning Utilization Data
+The utilization file is intended to help consumers identify which provider-rate combinations represent actively used contractual relationships versus theoretical rates that may never be utilized. Privacy requirements apply; no protected health information (PHI) should be included. Future versions may include numerical claim counts or summary statistics.
+
+#### Change-Log File
+A change-log file identifies additions, removals, or modifications to negotiated rates since the prior reporting period.
+
+| Field | Name | Type | Definition | Required |
+| ----- | ---- | ---- | ---------- | -------- |
+| **reporting_entity_name** | Entity Name | String | The legal name of the entity publishing the file. | Yes |
+| **reporting_entity_type** | Entity Type | String | The type of entity publishing the file. | Yes |
+| **network_id** | Network ID | String | The network identifier this change log applies to. | No |
+| **changes** | Changes | Array | An array of [change objects](#change-object) | Yes |
+| **prior_reporting_period** | Prior Reporting Period | String | The end date of the prior reporting period being compared against (ISO 8601 format). | Yes |
+| **current_reporting_period** | Current Reporting Period | String | The end date of the current reporting period (ISO 8601 format). | Yes |
+| **last_updated_on** | Last Updated On | String | The date the file was last updated (ISO 8601 format). | Yes |
+| **version** | Version | String | The version of the schema. | Yes |
+
+#### Change Object
+
+| Field | Name | Type | Definition | Required |
+| ----- | ---- | ---- | ---------- | -------- |
+| **change_type** | Change Type | String | Allowed values: "addition", "removal", "modification" | Yes |
+| **billing_code_type** | Billing Code Type | String | The billing code type affected by this change. | Yes |
+| **billing_code** | Billing Code | String | The billing code affected by this change. | Yes |
+| **provider_group_id** | Provider Group ID | Number | The provider group affected by this change, if applicable. | No |
+| **prior_negotiated_rate** | Prior Negotiated Rate | Number | The negotiated rate from the prior reporting period, if applicable. | No |
+| **current_negotiated_rate** | Current Negotiated Rate | Number | The negotiated rate in the current reporting period, if applicable. | No |
+| **effective_date** | Effective Date | String | The date the change became effective (ISO 8601 format). | Yes |
+
+##### Additional Notes Concerning Change Logs
+Change logs enable longitudinal analysis and tracking of rate trends over time. Reporting entities should maintain historical archives of prior machine-readable files for a minimum defined retention period to support auditing and research purposes.
 
 ---
 
 ### Discoverability Requirements
 
 Reporting entities must:
-1. Publish a standard file index (plain text) listing all available machine-readable files
-2. Include a "Price Transparency" link on the homepage of the entity's public website
+1. Publish a standard file index (plain text) listing all available machine-readable files with their URLs
+2. Include a "Price Transparency" link on the homepage of the entity's public website directing users to the file index
 3. Ensure MRF URLs are stable and accessible for validation and enforcement purposes
 
 ---
@@ -330,4 +312,4 @@ Reporting entities must:
 | Version | Effective Date | Key Changes |
 | ------- | -------------- | ----------- |
 | 1.0.0 | July 1, 2022 | Initial schema release |
-| 2.0.0 | January 1, 2026 | Added attestation object, reporting_entity_npi, plan_product_type, covered_lives, network_id, provider_taxonomy_filter, negotiated_rate_median, negotiated_rate_10th_percentile, negotiated_rate_90th_percentile, negotiated_rate_count. Changed update frequency from monthly to quarterly. |
+| 2.0.0 | TBD | Added plan_product_type, covered_lives, network_id, provider_taxonomy_filter. Added utilization file and change-log file specifications. Changed update frequency from monthly to quarterly. Added discoverability requirements. |
